@@ -77,6 +77,37 @@ function parseRuleSections(content) {
   return sections.filter((section) => normalizeText(section.title) !== "muc luc");
 }
 
+function buildSectionTree(sections) {
+  const root = {
+    level: 0,
+    numberParts: [],
+    children: []
+  };
+  const stack = [root];
+
+  for (const section of sections) {
+    while (stack.length > 1 && section.level <= stack[stack.length - 1].level) {
+      stack.pop();
+    }
+
+    const parent = stack[stack.length - 1];
+    const numberParts = [...parent.numberParts, parent.children.length + 1];
+    const node = {
+      section,
+      level: section.level,
+      numberParts,
+      children: [],
+      parent,
+      expanded: false
+    };
+
+    parent.children.push(node);
+    stack.push(node);
+  }
+
+  return root.children;
+}
+
 function createRulesReader(content) {
   marked.setOptions({
     gfm: true,
@@ -84,6 +115,7 @@ function createRulesReader(content) {
   });
 
   const sections = parseRuleSections(content);
+  const sectionTree = buildSectionTree(sections);
   const wrapper = document.createElement("section");
   wrapper.className = "rules-reader";
 
@@ -113,13 +145,9 @@ function createRulesReader(content) {
   emptyState.className = "rules-empty is-hidden";
   emptyState.textContent = "No matching sections found.";
 
-  const records = sections.map((section) => {
-    const tocButton = document.createElement("button");
-    tocButton.type = "button";
-    tocButton.className = "toc-link";
-    tocButton.textContent = section.title;
-    tocButton.style.paddingLeft = `${Math.max(0, section.level - 1) * 10 + 10}px`;
+  const records = new Map();
 
+  for (const section of sections) {
     const sectionEl = document.createElement("article");
     sectionEl.className = "rules-section";
     sectionEl.id = section.id;
@@ -134,37 +162,131 @@ function createRulesReader(content) {
     bodyEl.innerHTML = marked.parse(section.lines.join("\n").trim());
 
     sectionEl.append(headingEl, bodyEl);
-
-    tocButton.addEventListener("click", () => {
-      sectionEl.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-
-    return {
+    docContent.appendChild(sectionEl);
+    records.set(section.id, {
       searchText: normalizeText(`${section.title}\n${section.lines.join("\n")}`),
-      tocButton,
       sectionEl
-    };
-  });
+    });
+  }
 
-  for (const record of records) {
-    tocList.appendChild(record.tocButton);
-    docContent.appendChild(record.sectionEl);
+  function openParentTree(node) {
+    let current = node.parent;
+    while (current && current.section) {
+      current.expanded = true;
+      const record = records.get(current.section.id);
+      if (record?.toggleBtn) {
+        record.toggleBtn.textContent = "-";
+      }
+      if (record?.childrenWrap) {
+        record.childrenWrap.classList.remove("is-hidden");
+      }
+      current = current.parent;
+    }
+  }
+
+  function renderTree(nodes, target) {
+    for (const node of nodes) {
+      const hasChildren = node.children.length > 0;
+      const record = records.get(node.section.id);
+      const item = document.createElement("div");
+      item.className = `toc-item level-${Math.min(node.level, 6)}`;
+
+      const row = document.createElement("div");
+      row.className = "toc-row";
+
+      let toggleBtn = null;
+      let toggleControl;
+      if (hasChildren) {
+        toggleBtn = document.createElement("button");
+        toggleBtn.type = "button";
+        toggleBtn.className = "toc-toggle";
+        toggleBtn.textContent = "+";
+        toggleBtn.setAttribute("aria-label", "Toggle children");
+        toggleControl = toggleBtn;
+      } else {
+        const spacer = document.createElement("span");
+        spacer.className = "toc-toggle-spacer";
+        toggleControl = spacer;
+      }
+
+      const number = document.createElement("span");
+      number.className = "toc-number";
+      number.textContent = `${node.numberParts.join(".")}.`;
+
+      const link = document.createElement("button");
+      link.type = "button";
+      link.className = "toc-link";
+      link.textContent = node.section.title;
+      link.setAttribute("aria-label", `Go to ${node.section.title}`);
+
+      const childrenWrap = document.createElement("div");
+      childrenWrap.className = "toc-children is-hidden";
+
+      if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+          node.expanded = !node.expanded;
+          toggleBtn.textContent = node.expanded ? "-" : "+";
+          childrenWrap.classList.toggle("is-hidden", !node.expanded);
+        });
+      }
+
+      link.addEventListener("click", () => {
+        openParentTree(node);
+        record.sectionEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+
+      row.append(toggleControl, number, link);
+      item.append(row, childrenWrap);
+      target.appendChild(item);
+
+      records.set(node.section.id, {
+        ...record,
+        tocItem: item,
+        toggleBtn,
+        childrenWrap
+      });
+
+      renderTree(node.children, childrenWrap);
+    }
+  }
+
+  renderTree(sectionTree, tocList);
+
+  function filterTree(nodes, query) {
+    let anyVisible = false;
+
+    for (const node of nodes) {
+      const record = records.get(node.section.id);
+      const selfMatch = query.length === 0 || record.searchText.includes(query);
+      const childMatch = filterTree(node.children, query);
+      const visibleInToc = selfMatch || childMatch;
+      const visibleInDoc = query.length === 0 || selfMatch;
+
+      record.tocItem.classList.toggle("is-hidden", !visibleInToc);
+      record.sectionEl.classList.toggle("is-hidden", !visibleInDoc);
+
+      if (query.length > 0 && childMatch) {
+        node.expanded = true;
+        record.toggleBtn.textContent = "-";
+        record.childrenWrap.classList.remove("is-hidden");
+      } else if (query.length === 0 && node.children.length > 0) {
+        node.expanded = false;
+        record.toggleBtn.textContent = "+";
+        record.childrenWrap.classList.add("is-hidden");
+      }
+
+      if (visibleInDoc) {
+        anyVisible = true;
+      }
+    }
+
+    return anyVisible;
   }
 
   function applyFilter() {
     const query = normalizeText(search.value.trim());
-    let visibleCount = 0;
-
-    for (const record of records) {
-      const visible = query.length === 0 || record.searchText.includes(query);
-      record.tocButton.classList.toggle("is-hidden", !visible);
-      record.sectionEl.classList.toggle("is-hidden", !visible);
-      if (visible) {
-        visibleCount += 1;
-      }
-    }
-
-    emptyState.classList.toggle("is-hidden", visibleCount > 0);
+    const hasVisibleSections = filterTree(sectionTree, query);
+    emptyState.classList.toggle("is-hidden", hasVisibleSections);
   }
 
   search.addEventListener("input", applyFilter);
