@@ -421,6 +421,12 @@ body {
   color: #ffffff;
 }
 
+.rules-page .rules-toc-title,
+.rules-page .toc-link,
+.rules-page .rules-section-title {
+  color: #fff2a1;
+}
+
 .rules-page .rules-search {
   border-color: #666666;
 }
