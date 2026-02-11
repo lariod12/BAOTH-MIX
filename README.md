@@ -55,7 +55,13 @@ yarn preview
 - Keep touch targets at least 44px high.
 - Use vertical layout by default (stacked cards, clear spacing, short text lines).
 - Avoid heavy layout shifts; reserve space and keep interactions predictable.
-- Place real-time status in visible, compact UI elements for quick mobile feedback.
+
+## Required UI Direction (Project Rule)
+
+- All new UI should be built in vertical flow first (top-to-bottom layout).
+- For mobile small screens, content blocks should use full available width.
+- Primary and secondary action buttons should be full-width by default on mobile.
+- Horizontal two-column layouts should only be added for tablet/desktop breakpoints.
 
 ## Socket.IO Configuration
 

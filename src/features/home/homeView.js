@@ -1,11 +1,4 @@
-function createStatusBadge() {
-  const badge = document.createElement("span");
-  badge.className = "status-badge status-idle";
-  badge.textContent = "Disconnected";
-  return badge;
-}
-
-export function createHomeView(socket) {
+export function createHomeView() {
   const shell = document.createElement("main");
   shell.className = "mobile-shell";
 
@@ -14,45 +7,48 @@ export function createHomeView(socket) {
 
   const title = document.createElement("h1");
   title.className = "screen-title";
-  title.textContent = "Betrayal Mobile Hub";
+  title.textContent = "Betrayal Arcade";
 
   const subtitle = document.createElement("p");
   subtitle.className = "screen-subtitle";
-  subtitle.textContent = "Vanilla JavaScript + Socket.IO starter for mobile-first UI.";
+  subtitle.textContent = "Retro mode menu";
 
-  const statusRow = document.createElement("div");
-  statusRow.className = "status-row";
-  statusRow.innerHTML = '<span class="status-label">Socket status</span>';
-  const statusBadge = createStatusBadge();
-  statusRow.appendChild(statusBadge);
+  const menuOptions = document.createElement("div");
+  menuOptions.className = "menu-options";
 
-  const connectButton = document.createElement("button");
-  connectButton.type = "button";
-  connectButton.className = "btn-primary";
-  connectButton.textContent = "Connect Socket";
+  const playButton = document.createElement("button");
+  playButton.type = "button";
+  playButton.className = "btn-option btn-play";
+  playButton.textContent = "Play";
 
-  connectButton.addEventListener("click", () => {
-    if (socket.connected) {
-      socket.disconnect();
-      return;
-    }
+  const tutorialButton = document.createElement("button");
+  tutorialButton.type = "button";
+  tutorialButton.className = "btn-option btn-tutorial";
+  tutorialButton.textContent = "Tutorial";
 
-    socket.connect();
+  menuOptions.append(playButton, tutorialButton);
+
+  const menuHint = document.createElement("p");
+  menuHint.className = "menu-hint";
+  menuHint.textContent = "Choose your path.";
+
+  const tutorialPanel = document.createElement("div");
+  tutorialPanel.className = "tutorial-panel is-hidden";
+  tutorialPanel.innerHTML = "<strong>Tutorial:</strong> Explore, gather omens, and survive the haunt.";
+
+  playButton.addEventListener("click", () => {
+    menuHint.textContent = "Play selected. Entering game setup.";
+    tutorialPanel.classList.add("is-hidden");
   });
 
-  socket.on("connect", () => {
-    statusBadge.className = "status-badge status-online";
-    statusBadge.textContent = "Connected";
-    connectButton.textContent = "Disconnect Socket";
+  tutorialButton.addEventListener("click", () => {
+    const isHidden = tutorialPanel.classList.toggle("is-hidden");
+    menuHint.textContent = isHidden
+      ? "Choose your path."
+      : "Tutorial opened. Read before your first run.";
   });
 
-  socket.on("disconnect", () => {
-    statusBadge.className = "status-badge status-idle";
-    statusBadge.textContent = "Disconnected";
-    connectButton.textContent = "Connect Socket";
-  });
-
-  card.append(title, subtitle, statusRow, connectButton);
+  card.append(title, subtitle, menuOptions, menuHint, tutorialPanel);
   shell.appendChild(card);
   return shell;
 }
