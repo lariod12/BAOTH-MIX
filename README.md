@@ -68,6 +68,8 @@ yarn preview
 - The default visual theme must always use yellow, black, and white as the main color system.
 - New UI components should follow this palette first, then only add extra colors when strictly needed.
 - Keep contrast strong and readable on mobile screens using this yellow-black-white foundation.
+- Use dark backgrounds, yellow titles, and white content text across all pages for consistency.
+- Keep buttons in dark style with yellow labels by default; only show yellow background on active press state.
 
 ## Socket.IO Configuration
 
