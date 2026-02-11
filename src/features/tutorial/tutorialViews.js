@@ -1,4 +1,5 @@
 import rulesContent from "../../data_ref/rules.md?raw";
+import { OMEN_DEFS, REFERENCE_ROWS } from "../../data_ref/exploreStoryData.js";
 import { TRANSLATION_SECTIONS } from "../../data_ref/reference.js";
 import { EVENTS, ITEMS, OMENS } from "../../data_ref/cardsData.js";
 import { marked } from "marked";
@@ -110,7 +111,7 @@ function buildSectionTree(sections) {
   return root.children;
 }
 
-function createRulesReader(content) {
+function createRulesReader(content, initialSectionQuery = "") {
   marked.setOptions({
     gfm: true,
     breaks: true
@@ -253,6 +254,21 @@ function createRulesReader(content) {
   }
 
   renderTree(sectionTree, tocList);
+
+  if (initialSectionQuery.trim().length > 0) {
+    const normalizedQuery = normalizeText(initialSectionQuery);
+    const targetNode = sections.find((section) =>
+      normalizeText(section.title).includes(normalizedQuery)
+    );
+    if (targetNode) {
+      const targetRecord = records.get(targetNode.id);
+      if (targetRecord?.sectionEl) {
+        setTimeout(() => {
+          targetRecord.sectionEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 0);
+      }
+    }
+  }
 
   function filterTree(nodes, query) {
     let anyVisible = false;
@@ -538,7 +554,176 @@ function createCardsReader() {
   return wrapper;
 }
 
-export function createTutorialMenuView({ onBack, onRules, onReference, onCards } = {}) {
+function createExploreStoryReader() {
+  const wrapper = document.createElement("section");
+  wrapper.className = "explore-story-reader";
+
+  const topBar = document.createElement("div");
+  topBar.className = "explore-topbar";
+
+  const search = document.createElement("input");
+  search.type = "search";
+  search.className = "rules-search";
+  search.placeholder = "Search room...";
+  search.setAttribute("aria-label", "Search room");
+
+  let selectedOmenKey = OMEN_DEFS[0]?.key || "";
+
+  const omenPicker = document.createElement("div");
+  omenPicker.className = "explore-omen-picker";
+
+  const omenTrigger = document.createElement("button");
+  omenTrigger.type = "button";
+  omenTrigger.className = "explore-omen-trigger";
+  omenTrigger.setAttribute("aria-haspopup", "listbox");
+  omenTrigger.setAttribute("aria-expanded", "false");
+
+  const omenPanel = document.createElement("div");
+  omenPanel.className = "explore-omen-panel is-hidden";
+
+  const omenSearch = document.createElement("input");
+  omenSearch.type = "search";
+  omenSearch.className = "explore-omen-search";
+  omenSearch.placeholder = "Search omen...";
+  omenSearch.setAttribute("aria-label", "Search omen");
+
+  const omenList = document.createElement("div");
+  omenList.className = "explore-omen-options";
+  omenList.setAttribute("role", "listbox");
+
+  function getOmenLabelByKey(key) {
+    return OMEN_DEFS.find((item) => item.key === key)?.label || "";
+  }
+
+  function syncOmenTriggerLabel() {
+    omenTrigger.textContent = getOmenLabelByKey(selectedOmenKey);
+  }
+
+  function toggleOmenPanel(forceOpen) {
+    const shouldOpen = forceOpen ?? omenPanel.classList.contains("is-hidden");
+    omenPanel.classList.toggle("is-hidden", !shouldOpen);
+    omenTrigger.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+    if (shouldOpen) {
+      omenSearch.focus();
+      omenSearch.select();
+    }
+  }
+
+  function renderOmenOptions() {
+    const query = normalizeText(omenSearch.value.trim());
+    omenList.innerHTML = "";
+
+    for (const omen of OMEN_DEFS) {
+      const aliases = omen.aliases?.join(" ") || "";
+      const searchable = normalizeText(`${omen.label} ${aliases}`);
+      const visible = query.length === 0 || searchable.includes(query);
+      if (!visible) {
+        continue;
+      }
+
+      const option = document.createElement("button");
+      option.type = "button";
+      option.className = "explore-omen-option";
+      option.textContent = omen.label;
+      option.setAttribute("role", "option");
+      option.classList.toggle("is-active", omen.key === selectedOmenKey);
+
+      option.addEventListener("click", () => {
+        selectedOmenKey = omen.key;
+        syncOmenTriggerLabel();
+        toggleOmenPanel(false);
+        renderRows();
+      });
+
+      omenList.appendChild(option);
+    }
+  }
+
+  omenTrigger.addEventListener("click", () => toggleOmenPanel());
+  omenSearch.addEventListener("input", renderOmenOptions);
+
+  document.addEventListener("click", (event) => {
+    if (!omenPicker.contains(event.target)) {
+      toggleOmenPanel(false);
+    }
+  });
+
+  omenPanel.append(omenSearch, omenList);
+  omenPicker.append(omenTrigger, omenPanel);
+  topBar.append(search, omenPicker);
+
+  const tableWrap = document.createElement("div");
+  tableWrap.className = "explore-table-wrap";
+
+  const table = document.createElement("div");
+  table.className = "explore-table";
+
+  const head = document.createElement("div");
+  head.className = "explore-row explore-head";
+  head.innerHTML = "<span>Room</span><span>Omen</span>";
+
+  const body = document.createElement("div");
+  body.className = "explore-body";
+
+  const emptyState = document.createElement("p");
+  emptyState.className = "rules-empty is-hidden";
+  emptyState.textContent = "No matching rooms found.";
+
+  table.append(head, body);
+  tableWrap.append(table);
+
+  function renderRows() {
+    const query = normalizeText(search.value.trim());
+    const omenKey = selectedOmenKey;
+    body.innerHTML = "";
+    let visibleCount = 0;
+
+    for (const row of REFERENCE_ROWS) {
+      const roomName = row.room || "";
+      const roomMatch = query.length === 0 || normalizeText(roomName).includes(query);
+      if (!roomMatch) {
+        continue;
+      }
+
+      const scenarioValue = row[omenKey];
+      if (scenarioValue === undefined || scenarioValue === null) {
+        continue;
+      }
+
+      const item = document.createElement("div");
+      item.className = "explore-row";
+
+      const roomCell = document.createElement("span");
+      roomCell.textContent = roomName;
+
+      const valueCell = document.createElement("span");
+      valueCell.className = "explore-value";
+      valueCell.textContent = String(scenarioValue);
+
+      item.append(roomCell, valueCell);
+      body.appendChild(item);
+      visibleCount += 1;
+    }
+
+    emptyState.classList.toggle("is-hidden", visibleCount > 0);
+  }
+
+  search.addEventListener("input", renderRows);
+  syncOmenTriggerLabel();
+  renderOmenOptions();
+  renderRows();
+
+  wrapper.append(topBar, tableWrap, emptyState);
+  return wrapper;
+}
+
+export function createTutorialMenuView({
+  onBack,
+  onRules,
+  onReference,
+  onCards,
+  onExploreStory
+} = {}) {
   const { shell, card } = createShellCard();
 
   const title = document.createElement("h1");
@@ -582,19 +767,29 @@ export function createTutorialMenuView({ onBack, onRules, onReference, onCards }
     }
   });
 
-  options.append(rulesButton, referenceButton, cardsButton);
+  const exploreStoryButton = document.createElement("button");
+  exploreStoryButton.type = "button";
+  exploreStoryButton.className = "btn-option btn-play";
+  exploreStoryButton.textContent = "Explore the Story";
+  exploreStoryButton.addEventListener("click", () => {
+    if (typeof onExploreStory === "function") {
+      onExploreStory();
+    }
+  });
+
+  options.append(rulesButton, referenceButton, cardsButton, exploreStoryButton);
   card.append(title, subtitle, options, createBackButton(onBack));
   return shell;
 }
 
-export function createRulesView({ onBack } = {}) {
+export function createRulesView({ onBack, initialSectionQuery = "" } = {}) {
   const { shell, card } = createShellCard();
   card.classList.add("rules-page");
 
   const title = document.createElement("h1");
   title.className = "screen-title rules-title";
   title.textContent = "Rules";
-  card.append(title, createRulesReader(rulesContent), createBackButton(onBack));
+  card.append(title, createRulesReader(rulesContent, initialSectionQuery), createBackButton(onBack));
   return shell;
 }
 
@@ -616,5 +811,16 @@ export function createCardsView({ onBack } = {}) {
   title.textContent = "Cards";
 
   card.append(title, createCardsReader(), createBackButton(onBack));
+  return shell;
+}
+
+export function createExploreStoryView({ onBack } = {}) {
+  const { shell, card } = createShellCard();
+
+  const title = document.createElement("h1");
+  title.className = "screen-title";
+  title.textContent = "Explore the Story";
+
+  card.append(title, createExploreStoryReader(), createBackButton(onBack));
   return shell;
 }

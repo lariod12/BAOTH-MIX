@@ -2,6 +2,7 @@ import { createHomeView } from "../features/home/homeView.js";
 import { createPlayView } from "../features/play/playView.js";
 import {
   createCardsView,
+  createExploreStoryView,
   createReferenceView,
   createRulesView,
   createTutorialMenuView
@@ -13,6 +14,7 @@ const ROUTES = {
   PLAY: "play",
   TUTORIAL: "tutorial",
   RULES: "rules",
+  EXPLORE_STORY: "explore-story",
   REFERENCE: "reference",
   CARDS: "cards"
 };
@@ -37,7 +39,8 @@ export function initApp() {
           onBack: () => navigate(ROUTES.HOME),
           onRules: () => navigate(ROUTES.RULES),
           onReference: () => navigate(ROUTES.REFERENCE),
-          onCards: () => navigate(ROUTES.CARDS)
+          onCards: () => navigate(ROUTES.CARDS),
+          onExploreStory: () => navigate(ROUTES.EXPLORE_STORY)
         })
       );
       return;
@@ -45,6 +48,11 @@ export function initApp() {
 
     if (route === ROUTES.RULES) {
       root.appendChild(createRulesView({ onBack: () => navigate(ROUTES.TUTORIAL) }));
+      return;
+    }
+
+    if (route === ROUTES.EXPLORE_STORY) {
+      root.appendChild(createExploreStoryView({ onBack: () => navigate(ROUTES.TUTORIAL) }));
       return;
     }
 
