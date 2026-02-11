@@ -1,5 +1,6 @@
 import rulesContent from "../../data_ref/rules.md?raw";
 import { TRANSLATION_SECTIONS } from "../../data_ref/reference.js";
+import { EVENTS, ITEMS, OMENS } from "../../data_ref/cardsData.js";
 import { marked } from "marked";
 
 function createShellCard() {
@@ -406,7 +407,138 @@ function createReferenceReader() {
   return wrapper;
 }
 
-export function createTutorialMenuView({ onBack, onRules, onReference } = {}) {
+function createCardsReader() {
+  const wrapper = document.createElement("section");
+  wrapper.className = "cards-reader";
+
+  const search = document.createElement("input");
+  search.type = "search";
+  search.className = "rules-search";
+  search.placeholder = "Search cards...";
+  search.setAttribute("aria-label", "Search cards");
+
+  const list = document.createElement("div");
+  list.className = "cards-sections";
+
+  const emptyState = document.createElement("p");
+  emptyState.className = "rules-empty is-hidden";
+  emptyState.textContent = "No matching cards found.";
+
+  const tabs = document.createElement("div");
+  tabs.className = "cards-tabs";
+
+  const datasets = [
+    { id: "items", title: "Items", records: ITEMS },
+    { id: "events", title: "Events", records: EVENTS },
+    { id: "omens", title: "Omens", records: OMENS }
+  ];
+
+  let activeTabId = datasets[0].id;
+  const sectionRecords = datasets.map((dataset) => {
+    const tabButton = document.createElement("button");
+    tabButton.type = "button";
+    tabButton.className = "cards-tab";
+    tabButton.textContent = `${dataset.title} (${dataset.records.length})`;
+    tabs.appendChild(tabButton);
+
+    const sectionEl = document.createElement("article");
+    sectionEl.className = "cards-section";
+    sectionEl.id = `cards-${dataset.id}`;
+
+    const entriesWrap = document.createElement("div");
+    entriesWrap.className = "cards-entry-list";
+
+    const entryRecords = dataset.records.map((card) => {
+      const cardEl = document.createElement("div");
+      cardEl.className = "cards-entry";
+      cardEl.dataset.expanded = "false";
+
+      const headerButton = document.createElement("button");
+      headerButton.type = "button";
+      headerButton.className = "cards-header";
+
+      const name = document.createElement("span");
+      name.className = "cards-name";
+      name.textContent = card?.name?.vi || card?.id || "Unknown card";
+
+      const desc = document.createElement("p");
+      desc.className = "cards-text";
+      desc.textContent = card?.text?.vi || "";
+      desc.classList.add("is-hidden");
+
+      headerButton.appendChild(name);
+      cardEl.append(headerButton);
+      if (desc.textContent.length > 0) {
+        cardEl.append(desc);
+        headerButton.addEventListener("click", () => {
+          const isExpanded = cardEl.dataset.expanded === "true";
+          cardEl.dataset.expanded = isExpanded ? "false" : "true";
+          cardEl.classList.toggle("is-expanded", !isExpanded);
+          desc.classList.toggle("is-hidden", isExpanded);
+        });
+      }
+
+      const searchText = normalizeText(
+        `${card?.name?.vi || ""}\n${card?.id || ""}\n${card?.text?.vi || ""}\n${dataset.title}`
+      );
+
+      return { cardEl, searchText };
+    });
+
+    for (const entry of entryRecords) {
+      entriesWrap.appendChild(entry.cardEl);
+    }
+
+    sectionEl.append(entriesWrap);
+    list.appendChild(sectionEl);
+
+    return { tabButton, sectionEl, entryRecords, datasetId: dataset.id };
+  });
+
+  function applyFilter() {
+    const query = normalizeText(search.value.trim());
+    let visibleCards = 0;
+
+    for (const sectionRecord of sectionRecords) {
+      const isActiveTab = sectionRecord.datasetId === activeTabId;
+      sectionRecord.sectionEl.classList.toggle("is-hidden", !isActiveTab);
+      sectionRecord.tabButton.classList.toggle("is-active", isActiveTab);
+
+      if (!isActiveTab) {
+        continue;
+      }
+
+      let visibleEntries = 0;
+
+      for (const entry of sectionRecord.entryRecords) {
+        const visible = query.length === 0 || entry.searchText.includes(query);
+        entry.cardEl.classList.toggle("is-hidden", !visible);
+        if (visible) {
+          visibleEntries += 1;
+        }
+      }
+
+      visibleCards += visibleEntries;
+    }
+
+    emptyState.classList.toggle("is-hidden", visibleCards > 0);
+  }
+
+  for (const sectionRecord of sectionRecords) {
+    sectionRecord.tabButton.addEventListener("click", () => {
+      activeTabId = sectionRecord.datasetId;
+      applyFilter();
+    });
+  }
+
+  search.addEventListener("input", applyFilter);
+  applyFilter();
+
+  wrapper.append(search, tabs, list, emptyState);
+  return wrapper;
+}
+
+export function createTutorialMenuView({ onBack, onRules, onReference, onCards } = {}) {
   const { shell, card } = createShellCard();
 
   const title = document.createElement("h1");
@@ -440,7 +572,17 @@ export function createTutorialMenuView({ onBack, onRules, onReference } = {}) {
     }
   });
 
-  options.append(rulesButton, referenceButton);
+  const cardsButton = document.createElement("button");
+  cardsButton.type = "button";
+  cardsButton.className = "btn-option btn-play";
+  cardsButton.textContent = "Cards";
+  cardsButton.addEventListener("click", () => {
+    if (typeof onCards === "function") {
+      onCards();
+    }
+  });
+
+  options.append(rulesButton, referenceButton, cardsButton);
   card.append(title, subtitle, options, createBackButton(onBack));
   return shell;
 }
@@ -463,5 +605,16 @@ export function createReferenceView({ onBack } = {}) {
   title.className = "screen-title";
   title.textContent = "Reference";
   card.append(title, createReferenceReader(), createBackButton(onBack));
+  return shell;
+}
+
+export function createCardsView({ onBack } = {}) {
+  const { shell, card } = createShellCard();
+
+  const title = document.createElement("h1");
+  title.className = "screen-title";
+  title.textContent = "Cards";
+
+  card.append(title, createCardsReader(), createBackButton(onBack));
   return shell;
 }

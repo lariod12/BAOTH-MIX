@@ -70,6 +70,12 @@ yarn preview
 - Keep contrast strong and readable on mobile screens using this yellow-black-white foundation.
 - Use dark backgrounds, yellow titles, and white content text across all pages for consistency.
 - Keep buttons in dark style with yellow labels by default; only show yellow background on active press state.
+- Core palette reference:
+  - `#0a0a0a` (main background)
+  - `#141414` (surface/card background)
+  - `#ffffff` (primary text)
+  - `#facc15` (main yellow accent for titles/active states)
+  - `#fff2a1` (card collapse title color)
 
 ## Socket.IO Configuration
 
