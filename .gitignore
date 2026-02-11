@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+.env.*
+
+# Local editor / agent metadata
+.cursor/
+.claude/
+.kiro/

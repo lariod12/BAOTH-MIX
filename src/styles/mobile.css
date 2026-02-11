@@ -1,0 +1,97 @@
+:root {
+  color-scheme: dark;
+  --bg: #070b17;
+  --surface: #101426;
+  --border: #232945;
+  --text: #e7ecff;
+  --muted: #adb7e6;
+  --accent: #5d73ff;
+  --ok: #2ecc71;
+}
+
+body {
+  background: radial-gradient(100% 80% at 50% 0%, #1a2250 0%, var(--bg) 55%);
+  color: var(--text);
+  font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+#app {
+  min-height: 100dvh;
+}
+
+.mobile-shell {
+  width: min(100%, 520px);
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.mobile-card {
+  border: 1px solid var(--border);
+  background-color: color-mix(in oklab, var(--surface) 90%, #0b1022 10%);
+  border-radius: 16px;
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.screen-title {
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+.screen-subtitle {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-label {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.status-badge {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  border: 1px solid var(--border);
+}
+
+.status-idle {
+  background: #161d39;
+}
+
+.status-online {
+  background: color-mix(in oklab, var(--ok) 18%, transparent);
+  border-color: color-mix(in oklab, var(--ok) 70%, #1a2d22 30%);
+}
+
+.btn-primary {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, #7184ff, var(--accent));
+  color: #f7f8ff;
+  font-weight: 600;
+  min-height: 46px;
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+@media (min-width: 768px) {
+  .mobile-shell {
+    padding: 24px;
+  }
+
+  .mobile-card {
+    padding: 22px;
+  }
+}
