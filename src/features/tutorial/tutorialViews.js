@@ -1,4 +1,5 @@
-import rulesContent from "../../../rules.md?raw";
+import rulesContent from "../../data_ref/rules.md?raw";
+import { TRANSLATION_SECTIONS } from "../../data_ref/reference.js";
 import { marked } from "marked";
 
 function createShellCard() {
@@ -297,6 +298,114 @@ function createRulesReader(content) {
   return wrapper;
 }
 
+function createReferenceReader() {
+  const wrapper = document.createElement("section");
+  wrapper.className = "reference-reader";
+
+  const search = document.createElement("input");
+  search.type = "search";
+  search.className = "rules-search";
+  search.placeholder = "Search reference...";
+  search.setAttribute("aria-label", "Search reference");
+
+  const list = document.createElement("div");
+  list.className = "reference-sections";
+
+  const emptyState = document.createElement("p");
+  emptyState.className = "rules-empty is-hidden";
+  emptyState.textContent = "No matching entries found.";
+
+  const sectionRecords = TRANSLATION_SECTIONS.map((section) => {
+    const sectionEl = document.createElement("article");
+    sectionEl.className = "reference-section";
+
+    const titleEl = document.createElement("h3");
+    titleEl.className = "rules-section-title";
+    titleEl.textContent = section.title;
+
+    const entryList = document.createElement("div");
+    entryList.className = "reference-entry-list";
+
+    const tableHead = document.createElement("div");
+    tableHead.className = "reference-entry reference-entry-head";
+
+    const viHead = document.createElement("div");
+    viHead.className = "reference-col";
+    viHead.textContent = "Tiếng Việt";
+
+    const enHead = document.createElement("div");
+    enHead.className = "reference-col";
+    enHead.textContent = "English";
+
+    tableHead.append(viHead, enHead);
+    entryList.appendChild(tableHead);
+
+    const entryRecords = section.entries.map((entry) => {
+      const row = document.createElement("div");
+      row.className = "reference-entry";
+
+      const left = document.createElement("div");
+      left.className = "reference-col";
+      left.textContent = entry.vi || "-";
+
+      const right = document.createElement("div");
+      right.className = "reference-col";
+      right.textContent = entry.en || "-";
+
+      if (entry.desc) {
+        const desc = document.createElement("p");
+        desc.className = "reference-desc";
+        desc.textContent = entry.desc;
+        left.appendChild(desc);
+      }
+
+      row.append(left, right);
+
+      const searchText = normalizeText(`${entry.vi || ""}\n${entry.en || ""}\n${entry.desc || ""}`);
+
+      return { row, searchText };
+    });
+
+    for (const entryRecord of entryRecords) {
+      entryList.appendChild(entryRecord.row);
+    }
+
+    sectionEl.append(titleEl, entryList);
+    list.appendChild(sectionEl);
+
+    return { sectionEl, entryRecords };
+  });
+
+  function applyFilter() {
+    const query = normalizeText(search.value.trim());
+    let visibleSectionCount = 0;
+
+    for (const sectionRecord of sectionRecords) {
+      let visibleEntries = 0;
+
+      for (const entryRecord of sectionRecord.entryRecords) {
+        const visible = query.length === 0 || entryRecord.searchText.includes(query);
+        entryRecord.row.classList.toggle("is-hidden", !visible);
+        if (visible) {
+          visibleEntries += 1;
+        }
+      }
+
+      sectionRecord.sectionEl.classList.toggle("is-hidden", visibleEntries === 0);
+      if (visibleEntries > 0) {
+        visibleSectionCount += 1;
+      }
+    }
+
+    emptyState.classList.toggle("is-hidden", visibleSectionCount > 0);
+  }
+
+  search.addEventListener("input", applyFilter);
+
+  wrapper.append(search, list, emptyState);
+  return wrapper;
+}
+
 export function createTutorialMenuView({ onBack, onRules, onReference } = {}) {
   const { shell, card } = createShellCard();
 
@@ -353,11 +462,6 @@ export function createReferenceView({ onBack } = {}) {
   const title = document.createElement("h1");
   title.className = "screen-title";
   title.textContent = "Reference";
-
-  const subtitle = document.createElement("p");
-  subtitle.className = "screen-subtitle";
-  subtitle.textContent = "Reference cards and quick lookup content will be here.";
-
-  card.append(title, subtitle, createBackButton(onBack));
+  card.append(title, createReferenceReader(), createBackButton(onBack));
   return shell;
 }

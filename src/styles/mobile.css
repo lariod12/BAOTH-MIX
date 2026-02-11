@@ -260,6 +260,67 @@ body {
   color: #d6c987;
 }
 
+.reference-reader {
+  display: grid;
+  gap: 10px;
+}
+
+.reference-sections {
+  display: grid;
+  gap: 10px;
+  max-height: 56dvh;
+  overflow: auto;
+}
+
+.reference-section {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  background: #111111;
+}
+
+.reference-entry-list {
+  display: grid;
+  gap: 8px;
+}
+
+.reference-entry {
+  border: 1px solid #2f2f2f;
+  border-radius: 8px;
+  padding: 8px;
+  background: #161616;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.reference-entry-head {
+  background: #1d1d1d;
+  border-color: #575757;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.reference-entry-head .reference-col {
+  font-weight: 700;
+  color: #facc15;
+}
+
+.reference-col {
+  color: #ffffff;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.reference-desc {
+  margin: 6px 0 0;
+  color: #e6e6e6;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
 .rules-page {
   color: #ffffff;
 }
