@@ -1,4 +1,4 @@
-export function createHomeView() {
+export function createHomeView({ onPlay, onTutorial } = {}) {
   const shell = document.createElement("main");
   shell.className = "mobile-shell";
 
@@ -7,7 +7,7 @@ export function createHomeView() {
 
   const title = document.createElement("h1");
   title.className = "screen-title";
-  title.textContent = "Betrayal Arcade";
+  title.textContent = "Betrayal At House on The Hill";
 
   const subtitle = document.createElement("p");
   subtitle.className = "screen-subtitle";
@@ -23,24 +23,24 @@ export function createHomeView() {
 
   const tutorialButton = document.createElement("button");
   tutorialButton.type = "button";
-  tutorialButton.className = "btn-option btn-tutorial";
+  tutorialButton.className = "btn-option btn-play";
   tutorialButton.textContent = "Tutorial";
 
   menuOptions.append(playButton, tutorialButton);
 
-  const tutorialPanel = document.createElement("div");
-  tutorialPanel.className = "tutorial-panel is-hidden";
-  tutorialPanel.innerHTML = "<strong>Tutorial:</strong> Explore, gather omens, and survive the haunt.";
-
   playButton.addEventListener("click", () => {
-    tutorialPanel.classList.add("is-hidden");
+    if (typeof onPlay === "function") {
+      onPlay();
+    }
   });
 
   tutorialButton.addEventListener("click", () => {
-    tutorialPanel.classList.toggle("is-hidden");
+    if (typeof onTutorial === "function") {
+      onTutorial();
+    }
   });
 
-  card.append(title, subtitle, menuOptions, tutorialPanel);
+  card.append(title, subtitle, menuOptions);
   shell.appendChild(card);
   return shell;
 }

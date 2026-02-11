@@ -42,6 +42,7 @@ body {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #f3ecff;
+  text-align: center;
 }
 
 .screen-subtitle {
@@ -69,30 +70,19 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  transition: transform 120ms ease, background-color 120ms ease, color 120ms ease;
 }
 
 .btn-play {
-  background: var(--accent);
-  color: #ffffff;
-}
-
-.btn-tutorial {
-  background: var(--tutorial);
-  color: #ddd4eb;
+  background: #20182a;
+  color: var(--ink);
 }
 
 .btn-option:active {
-  filter: brightness(1.08);
-}
-
-.tutorial-panel {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  background: var(--panel);
-  color: var(--ink);
-  font-size: 0.88rem;
-  line-height: 1.5;
+  background: var(--accent);
+  color: #111111;
+  transform: translateY(2px);
+  border-color: var(--accent);
 }
 
 .is-hidden {
