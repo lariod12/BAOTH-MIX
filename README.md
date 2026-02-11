@@ -63,6 +63,12 @@ yarn preview
 - Primary and secondary action buttons should be full-width by default on mobile.
 - Horizontal two-column layouts should only be added for tablet/desktop breakpoints.
 
+## Theme Direction (Project Rule)
+
+- The default visual theme must always use yellow, black, and white as the main color system.
+- New UI components should follow this palette first, then only add extra colors when strictly needed.
+- Keep contrast strong and readable on mobile screens using this yellow-black-white foundation.
+
 ## Socket.IO Configuration
 
 Socket client reads endpoint from `VITE_SOCKET_URL`.

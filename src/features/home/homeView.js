@@ -11,7 +11,7 @@ export function createHomeView() {
 
   const subtitle = document.createElement("p");
   subtitle.className = "screen-subtitle";
-  subtitle.textContent = "Retro mode menu";
+  subtitle.textContent = "Let's find out what happened. A hidden story awaits.";
 
   const menuOptions = document.createElement("div");
   menuOptions.className = "menu-options";
@@ -28,27 +28,19 @@ export function createHomeView() {
 
   menuOptions.append(playButton, tutorialButton);
 
-  const menuHint = document.createElement("p");
-  menuHint.className = "menu-hint";
-  menuHint.textContent = "Choose your path.";
-
   const tutorialPanel = document.createElement("div");
   tutorialPanel.className = "tutorial-panel is-hidden";
   tutorialPanel.innerHTML = "<strong>Tutorial:</strong> Explore, gather omens, and survive the haunt.";
 
   playButton.addEventListener("click", () => {
-    menuHint.textContent = "Play selected. Entering game setup.";
     tutorialPanel.classList.add("is-hidden");
   });
 
   tutorialButton.addEventListener("click", () => {
-    const isHidden = tutorialPanel.classList.toggle("is-hidden");
-    menuHint.textContent = isHidden
-      ? "Choose your path."
-      : "Tutorial opened. Read before your first run.";
+    tutorialPanel.classList.toggle("is-hidden");
   });
 
-  card.append(title, subtitle, menuOptions, menuHint, tutorialPanel);
+  card.append(title, subtitle, menuOptions, tutorialPanel);
   shell.appendChild(card);
   return shell;
 }

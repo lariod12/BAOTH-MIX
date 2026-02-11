@@ -1,17 +1,19 @@
 :root {
-  --bg: #f4f1ea;
-  --surface: #ffffff;
-  --ink: #111111;
-  --muted: #333333;
-  --play: #ff4d00;
-  --tutorial: #ffe600;
-  --panel: #d9e9ff;
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --ink: #f7e27a;
+  --muted: #cbbd73;
+  --accent: #facc15;
+  --tutorial: #1f1f1f;
+  --panel: #111111;
+  --border: #3b3b3b;
+  --border-strong: #5a5a5a;
 }
 
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  font-family: Georgia, "Times New Roman", serif;
 }
 
 #app {
@@ -26,27 +28,28 @@ body {
 }
 
 .mobile-card {
-  border: 4px solid var(--ink);
+  border: 2px solid var(--border-strong);
   background: var(--surface);
-  border-radius: 0;
+  border-radius: 10px;
   padding: 16px;
   display: grid;
   gap: 16px;
-  box-shadow: 10px 10px 0 var(--ink);
 }
 
 .screen-title {
   font-size: 1.45rem;
   line-height: 1.2;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  color: #f3ecff;
 }
 
 .screen-subtitle {
   color: var(--muted);
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 0.86rem;
+  text-transform: none;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
 }
 
 .menu-options {
@@ -56,48 +59,40 @@ body {
 }
 
 .btn-option {
-  border: 3px solid var(--ink);
-  border-radius: 0;
+  border: 2px solid var(--border-strong);
+  border-radius: 8px;
   width: 100%;
   min-height: 52px;
   padding: 12px 14px;
   color: var(--ink);
-  background: #ffffff;
+  background: #20182a;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  box-shadow: 5px 5px 0 var(--ink);
+  letter-spacing: 0.12em;
 }
 
 .btn-play {
-  background: var(--play);
+  background: var(--accent);
   color: #ffffff;
 }
 
 .btn-tutorial {
   background: var(--tutorial);
+  color: #ddd4eb;
 }
 
 .btn-option:active {
-  transform: translate(2px, 2px);
-  box-shadow: 3px 3px 0 var(--ink);
-}
-
-.menu-hint {
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  filter: brightness(1.08);
 }
 
 .tutorial-panel {
-  border: 3px solid var(--ink);
-  border-radius: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
   padding: 10px 12px;
   background: var(--panel);
   color: var(--ink);
   font-size: 0.88rem;
-  box-shadow: 5px 5px 0 var(--ink);
+  line-height: 1.5;
 }
 
 .is-hidden {
@@ -111,7 +106,6 @@ body {
 
   .mobile-card {
     padding: 14px;
-    box-shadow: 6px 6px 0 var(--ink);
   }
 }
 
