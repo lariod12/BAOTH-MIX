@@ -1,4 +1,5 @@
 import rulesContent from "../../../rules.md?raw";
+import { marked } from "marked";
 
 function createShellCard() {
   const shell = document.createElement("main");
@@ -77,6 +78,11 @@ function parseRuleSections(content) {
 }
 
 function createRulesReader(content) {
+  marked.setOptions({
+    gfm: true,
+    breaks: true
+  });
+
   const sections = parseRuleSections(content);
   const wrapper = document.createElement("section");
   wrapper.className = "rules-reader";
@@ -123,9 +129,9 @@ function createRulesReader(content) {
     headingEl.className = "rules-section-title";
     headingEl.textContent = section.title;
 
-    const bodyEl = document.createElement("pre");
+    const bodyEl = document.createElement("div");
     bodyEl.className = "doc-content";
-    bodyEl.textContent = section.lines.join("\n").trim();
+    bodyEl.innerHTML = marked.parse(section.lines.join("\n").trim());
 
     sectionEl.append(headingEl, bodyEl);
 

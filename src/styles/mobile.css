@@ -173,12 +173,41 @@ body {
 .doc-content {
   margin: 0;
   padding: 0;
-  white-space: pre-wrap;
   word-break: break-word;
   font-family: "Times New Roman", Georgia, serif;
   font-size: 0.9rem;
   line-height: 1.45;
   color: #f2e8b7;
+}
+
+.doc-content p {
+  margin: 0 0 10px;
+}
+
+.doc-content ul,
+.doc-content ol {
+  margin: 0 0 10px;
+  padding-left: 20px;
+}
+
+.doc-content li {
+  margin-bottom: 6px;
+}
+
+.doc-content strong {
+  color: #ffffff;
+}
+
+.doc-content em {
+  color: #e8e8e8;
+}
+
+.doc-content code {
+  background: #1f1f1f;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  padding: 1px 4px;
+  color: #ffffff;
 }
 
 .rules-empty {
