@@ -11,7 +11,7 @@ import { byId } from "../utils/dom.js";
 
 const ROUTES = {
   HOME: "home",
-  PLAY: "play",
+  PICK_CHARACTER: "pick-character",
   TUTORIAL: "tutorial",
   RULES: "rules",
   EXPLORE_STORY: "explore-story",
@@ -28,7 +28,7 @@ export function initApp() {
   function navigate(route) {
     root.innerHTML = "";
 
-    if (route === ROUTES.PLAY) {
+    if (route === ROUTES.PICK_CHARACTER) {
       root.appendChild(createPlayView({ onBack: () => navigate(ROUTES.HOME) }));
       return;
     }
@@ -68,7 +68,7 @@ export function initApp() {
 
     root.appendChild(
       createHomeView({
-        onPlay: () => navigate(ROUTES.PLAY),
+        onPlay: () => navigate(ROUTES.PICK_CHARACTER),
         onTutorial: () => navigate(ROUTES.TUTORIAL)
       })
     );
