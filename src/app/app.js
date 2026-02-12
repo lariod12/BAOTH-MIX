@@ -1,5 +1,5 @@
 import { createHomeView } from "../features/home/homeView.js";
-import { createPlayView } from "../features/play/playView.js";
+import { createPlayStartView, createPlayView } from "../features/play/playView.js";
 import {
   createCardsView,
   createExploreStoryView,
@@ -12,6 +12,7 @@ import { byId } from "../utils/dom.js";
 const ROUTES = {
   HOME: "home",
   PICK_CHARACTER: "pick-character",
+  PLAY_START: "play-start",
   TUTORIAL: "tutorial",
   RULES: "rules",
   EXPLORE_STORY: "explore-story",
@@ -25,11 +26,29 @@ export function initApp() {
     throw new Error("Missing #app root element.");
   }
 
-  function navigate(route) {
+  let routeState = {};
+
+  function navigate(route, state = {}) {
+    routeState = state;
     root.innerHTML = "";
 
     if (route === ROUTES.PICK_CHARACTER) {
-      root.appendChild(createPlayView({ onBack: () => navigate(ROUTES.HOME) }));
+      root.appendChild(
+        createPlayView({
+          onBack: () => navigate(ROUTES.HOME),
+          onStart: (characterId) => navigate(ROUTES.PLAY_START, { characterId })
+        })
+      );
+      return;
+    }
+
+    if (route === ROUTES.PLAY_START) {
+      root.appendChild(
+        createPlayStartView({
+          characterId: routeState.characterId,
+          onBack: () => navigate(ROUTES.PICK_CHARACTER)
+        })
+      );
       return;
     }
 

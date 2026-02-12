@@ -207,9 +207,9 @@ body {
 }
 
 .btn-ready.is-ready {
-  background: #facc15;
-  color: #111111;
-  border-color: #facc15;
+  background: #3a1616;
+  color: #ffd4d4;
+  border-color: #8f3a3a;
 }
 
 .btn-ready:disabled {
@@ -217,6 +217,87 @@ body {
   color: #8b8b8b;
   border-color: #4f4f4f;
   background: #232323;
+}
+
+.btn-start {
+  background: #facc15;
+  color: #111111;
+  border-color: #facc15;
+}
+
+.play-start-card {
+  --character-accent: #facc15;
+  gap: 12px;
+  border-color: var(--character-accent);
+}
+
+.start-character-name {
+  margin: 0;
+  color: #fff2a1;
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.start-character-description {
+  margin: 0;
+  white-space: pre-wrap;
+  color: #ececec;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  max-height: 32dvh;
+  overflow: auto;
+  border: 1px solid #353535;
+  border-radius: 8px;
+  background: #111111;
+  padding: 10px;
+}
+
+.start-section-title {
+  margin: 0;
+  color: #facc15;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.inventory-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.inventory-card {
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  background: #101010;
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.inventory-card-title {
+  margin: 0;
+  color: #fff2a1;
+  font-size: 0.95rem;
+}
+
+.inventory-card-count {
+  margin: 0;
+  color: #cfcfcf;
+  font-size: 0.8rem;
+}
+
+.inventory-card-preview {
+  margin: 0;
+  padding-left: 18px;
+  color: #ececec;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.inventory-card-hint {
+  margin: 0;
+  color: #facc15;
+  font-size: 0.8rem;
 }
 
 .rules-reader {

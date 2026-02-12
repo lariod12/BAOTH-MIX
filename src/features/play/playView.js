@@ -1,4 +1,5 @@
-import { CHARACTERS } from "../../data_ref/charactersData.js";
+import { EVENTS, ITEMS, OMENS } from "../../data_ref/cardsData.js";
+import { CHARACTER_BY_ID, CHARACTERS } from "../../data_ref/charactersData.js";
 
 const COLOR_LABELS = {
   red: "Red",
@@ -26,7 +27,7 @@ function getCharacterInsight(character) {
   return character?.profile?.vi?.info || character?.profile?.en?.info || "";
 }
 
-export function createPlayView({ onBack } = {}) {
+export function createPlayView({ onBack, onStart } = {}) {
   const shell = document.createElement("main");
   shell.className = "mobile-shell";
 
@@ -176,6 +177,11 @@ export function createPlayView({ onBack } = {}) {
   const actions = document.createElement("div");
   actions.className = "play-actions";
 
+  const startButton = document.createElement("button");
+  startButton.type = "button";
+  startButton.className = "btn-option btn-start is-hidden";
+  startButton.textContent = "Start";
+
   const backButton = document.createElement("button");
   backButton.type = "button";
   backButton.className = "btn-option btn-play";
@@ -189,6 +195,16 @@ export function createPlayView({ onBack } = {}) {
     isReady = !isReady;
     syncCharacterState();
     syncReadyButton();
+    startButton.classList.toggle("is-hidden", !(isReady && selectedCharacterId));
+  });
+
+  startButton.addEventListener("click", () => {
+    if (!isReady || !selectedCharacterId) {
+      return;
+    }
+    if (typeof onStart === "function") {
+      onStart(selectedCharacterId);
+    }
   });
 
   backButton.addEventListener("click", () => {
@@ -198,8 +214,109 @@ export function createPlayView({ onBack } = {}) {
   });
 
   syncReadyButton();
-  actions.append(readyButton, backButton);
+  actions.append(readyButton, startButton, backButton);
   card.append(title, subtitle, picker, actions);
   shell.appendChild(card);
+  return shell;
+}
+
+function createInventoryCard({ title, records }) {
+  const block = document.createElement("article");
+  block.className = "inventory-card";
+
+  const heading = document.createElement("h3");
+  heading.className = "inventory-card-title";
+  heading.textContent = title;
+
+  const count = document.createElement("p");
+  count.className = "inventory-card-count";
+  count.textContent = `Deck size: ${records.length}`;
+
+  const preview = document.createElement("ul");
+  preview.className = "inventory-card-preview";
+
+  for (const record of records.slice(0, 3)) {
+    const item = document.createElement("li");
+    item.textContent = record?.name?.vi || record?.id || "Unknown";
+    preview.appendChild(item);
+  }
+
+  const hint = document.createElement("p");
+  hint.className = "inventory-card-hint";
+  hint.textContent = "Inventory slot: Empty";
+
+  block.append(heading, count, preview, hint);
+  return block;
+}
+
+export function createPlayStartView({ characterId, onBack } = {}) {
+  const character = CHARACTER_BY_ID[characterId];
+  const shell = document.createElement("main");
+  shell.className = "mobile-shell";
+
+  const card = document.createElement("section");
+  card.className = "mobile-card play-start-card";
+  shell.appendChild(card);
+
+  if (!character) {
+    const title = document.createElement("h1");
+    title.className = "screen-title";
+    title.textContent = "Welcome the House on the Hill";
+
+    const empty = document.createElement("p");
+    empty.className = "screen-subtitle";
+    empty.textContent = "Chưa có nhân vật được chọn.";
+
+    const backButton = document.createElement("button");
+    backButton.type = "button";
+    backButton.className = "btn-option btn-play";
+    backButton.textContent = "Back";
+    backButton.addEventListener("click", () => {
+      if (typeof onBack === "function") {
+        onBack();
+      }
+    });
+
+    card.append(title, empty, backButton);
+    return shell;
+  }
+
+  const title = document.createElement("h1");
+  title.className = "screen-title";
+  title.textContent = "Welcome the House on the Hill";
+
+  card.style.setProperty("--character-accent", COLOR_HEX[character.color] || "#facc15");
+
+  const name = document.createElement("h2");
+  name.className = "start-character-name";
+  name.textContent = getLocalizedName(character);
+
+  const description = document.createElement("p");
+  description.className = "start-character-description";
+  description.textContent = getCharacterInsight(character) || "No character insight available yet.";
+
+  const inventoryTitle = document.createElement("h2");
+  inventoryTitle.className = "start-section-title";
+  inventoryTitle.textContent = "Inventory";
+
+  const inventoryGrid = document.createElement("section");
+  inventoryGrid.className = "inventory-grid";
+  inventoryGrid.append(
+    createInventoryCard({ title: "Omen Cards", records: OMENS }),
+    createInventoryCard({ title: "Event Cards", records: EVENTS }),
+    createInventoryCard({ title: "Item Cards", records: ITEMS })
+  );
+
+  const backButton = document.createElement("button");
+  backButton.type = "button";
+  backButton.className = "btn-option btn-play";
+  backButton.textContent = "Back";
+  backButton.addEventListener("click", () => {
+    if (typeof onBack === "function") {
+      onBack();
+    }
+  });
+
+  card.append(title, name, description, inventoryTitle, inventoryGrid, backButton);
   return shell;
 }
